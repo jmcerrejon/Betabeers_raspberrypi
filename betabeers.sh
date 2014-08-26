@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 #
 # Author: Jose Cerrejon Gonzalez
 #
@@ -26,8 +26,14 @@ RandomNum(){
     read -p "E N H O R A B U E N A - N Ú M E R O: ${RANDOM_NUM}"
 }
 
+GPIO_RADIO(){
+    sudo $HOME/pifm $HOME/halt.wav 95 &
+    dialog --infobox "Estás escuchando..." 3 23; sleep 9
+    dialog --infobox "Halt and Catch Fire" 3 23; sleep 21
+}
+
 RPLAY(){
-    dialog  --title     "RPlay" \
+    dialog  --title     "[ RPlay ]" \
         --backtitle "${BTITLE}" \
         --yes-label "Encender" \
         --no-label  "Apagar" \
@@ -35,8 +41,23 @@ RPLAY(){
 
     response=$?
     case $response in
-       0) sudo update-rc.d -f rplay enable ; sudo /etc/init.d/rplay start;;
-       1) sudo /etc/init.d/rplay stop ; sudo update-rc.d -f rplay disable;;
+       0) clear ; sudo update-rc.d -f rplay enable ; sudo /etc/init.d/rplay start ; read -p "Activado. Pulse una tecla para continuar...";;
+       1) clear ; sudo /etc/init.d/rplay stop ; sudo update-rc.d -f rplay disable; read -p "Desactivado. Pulse una tecla para continuar...";;
+       255) echo "[ESC] key pressed.";;
+    esac
+}
+
+OWNCLOUD(){
+    dialog  --title     "[ ownCloud ]" \
+        --backtitle "${BTITLE}" \
+        --yes-label "Encender" \
+        --no-label  "Apagar" \
+        --yesno     "¿Qué deseas hacer?" 7 60
+
+    response=$?
+    case $response in
+       0) clear ; sudo update-rc.d -f nginx enable ; sudo /etc/init.d/nginx start ; read -p "Activado. Pulse una tecla para continuar...";;
+       1) clear ; sudo /etc/init.d/nginx stop ; sudo update-rc.d -f nginx disable; read -p "Desactivado. Pulse una tecla para continuar...";;
        255) echo "[ESC] key pressed.";;
     esac
 }
@@ -49,6 +70,8 @@ do
     --title "[ ¿Para qué quiero yo una Raspberry PI? ]" --menu "" 15 60 5 \
     Desktop "Escritorio ligero LXDE" \
     RPlay "AirPlay mirroring" \
+    GPIO "General Purpose Input Output" \
+    ownCloud "Tu propio espacio en la nube" \
     Sorteo "Sorteo Kit Raspberry Pi @raspipc" \
     Exit "Salir a la Shell" 2>"${INPUT}"
 
@@ -57,6 +80,8 @@ do
     case $menuitem in
         Desktop) startx;;
         RPlay) RPLAY;;
+        GPIO) GPIO_RADIO;;
+        ownCloud) OWNCLOUD;;
         Sorteo) RandomNum; echo "Visita misapuntesde.com :)"; break;;
         Exit) echo "Visita misapuntesde.com :)"; break;;
     esac
