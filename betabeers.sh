@@ -20,8 +20,10 @@ RandomNum(){
     dialog --infobox "Y el ganador es..." 3 33; sleep 5
     dialog --infobox "Ya viene, ya viene... ;)" 3 33; sleep 5
     MAX_NUMBER=$(<"${INPUT}")
-    clear && toilet -f mono12 -F metal $[($RANDOM%${MAX_NUMBER})+1]
-    read -p $'\033[0;34m ¡ E N H O R A B U E N A !'
+    RANDOM_NUM=$[($RANDOM%${MAX_NUMBER})+1]
+    clear && toilet -f mono12 -F metal $RANDOM_NUM
+    echo -e "Ganador Kit Raspberry Pi: ${RANDOM_NUM}\n"'Código utilizado: $[($RANDOM%${MAX_NUMBER})+1]' > ganador
+    read -p "E N H O R A B U E N A - N Ú M E R O: ${RANDOM_NUM}"
 }
 
 # Main menu
@@ -38,7 +40,7 @@ do
 
     case $menuitem in
         Date/time) show_date;;
-        Sorteo) RandomNum; break;;
+        Sorteo) RandomNum; echo "Visita misapuntesde.com :)"; break;;
         Exit) echo "Visita misapuntesde.com :)"; break;;
     esac
 
