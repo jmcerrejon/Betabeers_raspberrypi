@@ -62,16 +62,37 @@ OWNCLOUD(){
     esac
 }
 
+CAMERA(){
+    dialog  --title     "[ Cámara ]" \
+        --backtitle "${BTITLE}" \
+        --yes-label "Encender" \
+        --no-label  "Apagar" \
+        --yesno     "¿Qué deseas hacer?" 7 60
+
+    response=$?
+    case $response in
+       0) clear ; sudo update-rc.d -f nginx enable ; sudo /etc/init.d/nginx start ; read -p "Activado. Pulse una tecla para continuar...";;
+       1) clear ; sudo /etc/init.d/nginx stop ; sudo update-rc.d -f nginx disable; read -p "Desactivado. Pulse una tecla para continuar...";;
+       255) echo "[ESC] key pressed.";;
+    esac
+}
+
+EMULATORS(){
+    echo "lo q sea"
+}
+
 # Main menu
 
 while true
 do
     dialog --clear --backtitle "${BTITLE}" \
-    --title "[ ¿Para qué quiero yo una Raspberry PI? ]" --menu "" 15 60 5 \
+    --title "[ ¿Para qué quiero yo una Raspberry PI? ]" --menu "" 13 70 13 \
     Desktop "Escritorio ligero LXDE" \
     RPlay "AirPlay mirroring" \
     GPIO "General Purpose Input Output" \
     ownCloud "Tu propio espacio en la nube" \
+    Camara "* Prueba de cámara para videovigilancia" \
+    Emuladores "* Emula casi a la perfección cualquier sistema retro" \
     Sorteo "Sorteo Kit Raspberry Pi @raspipc" \
     Exit "Salir a la Shell" 2>"${INPUT}"
 
@@ -82,7 +103,9 @@ do
         RPlay) RPLAY;;
         GPIO) GPIO_RADIO;;
         ownCloud) OWNCLOUD;;
-        Sorteo) RandomNum; echo "Visita misapuntesde.com :)"; break;;
+        Camara) CAMERA;;
+        Emuladores) EMULATORS;;
+        Sorteo) RandomNum; echo -e "\nVisita misapuntesde.com :)"; break;;
         Exit) echo "Visita misapuntesde.com :)"; break;;
     esac
 
