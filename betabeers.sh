@@ -9,7 +9,7 @@ clear
 # Capturamos las respuestas en el fichero siguiente
 
 INPUT=/tmp/mnu.sh.$$
-IP=$(hostname -I)
+IP=$(/sbin/ifconfig eth0 | grep "inet addr" | awk -F: '{print $2}' | awk '{print $1}')
 [ -f /opt/vc/bin/vcgencmd ] && TEMPC="| $(/opt/vc/bin/vcgencmd measure_temp) " || TEMPC=""
 BTITLE="BetaBeers Huelva | Fecha: $(date '+%d/%m/%y') | José Manuel Cerrejón González | IP: ${IP} ${TEMPC}"
 # Borramos el fichero anterior cuando salgamos
@@ -29,8 +29,8 @@ RandomNum(){
 }
 
 GPIO_RADIO(){
-    sudo $HOME/pifm $HOME/halt.wav 95 &
-    dialog --infobox "Emitiendo por FM 95.0" 3 23; sleep 9
+    sudo $HOME/sc/pifm/pifm $HOME/sc/pifm/halt.wav 95 &
+    dialog --infobox "Emitiendo por FM 95.0" 3 26; sleep 9
     dialog --infobox "Estás escuchando..." 3 23; sleep 9
     dialog --infobox "Halt and Catch Fire" 3 23; sleep 22
 }
@@ -108,18 +108,17 @@ QUAKE3(){
 }
 
 # Main menu
-
+   # Camara "Prueba de cámara para videovigilancia" \
 while true
 do
     dialog --clear --backtitle "${BTITLE}" \
     --title "[ ¿Para qué quiero yo una Raspberry PI? ]" --menu "" 13 70 13 \
     Desktop "Servidor gráfico LXDE" \
     RPlay "AirPlay mirroring" \
-    GPIO "General Purpose Input Output" \
     Aceleradora "Veamos como rinde Broadcom..." \
     ownCloud "Tu propio espacio en la nube" \
-    Camara "Prueba de cámara para videovigilancia" \
     Emuladores "Emula casi a la perfección cualquier sistema retro" \
+    GPIO "General Purpose Input Output" \
     XBMC "El Media Center más pequeño del mundo" \
     PiKISS "Automatizar la configuración de tu Raspberry Pi" \
     Sorteo "Sorteo Kit Raspberry Pi @raspipc" \
@@ -136,7 +135,7 @@ do
         Camara) CAMERA;;
         Emuladores) EMULATORS;;
         PiKISS) $HOME/sc/PiKISS/piKiss.sh -nu;;
-        Sorteo) fbi /slides/raspipc.png ; RandomNum ; echo -e "\nVisita misapuntesde.com :)"; break;;
+        Sorteo) fbi rpc.jpg ; RandomNum ; echo -e "\nVisita misapuntesde.com :)"; break;;
         Exit) echo "Visita misapuntesde.com :)"; break;;
     esac
 
