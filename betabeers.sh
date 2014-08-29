@@ -9,7 +9,9 @@ clear
 # Capturamos las respuestas en el fichero siguiente
 
 INPUT=/tmp/mnu.sh.$$
-BTITLE="BetaBeers Huelva | Fecha: $(date '+%d/%m/%y') | José Manuel Cerrejón González | IP: $(hostname -I)"
+IP=$(hostname -I)
+[ -f /opt/vc/bin/vcgencmd ] && TEMPC="| $(/opt/vc/bin/vcgencmd measure_temp) " || TEMPC=""
+BTITLE="BetaBeers Huelva | Fecha: $(date '+%d/%m/%y') | José Manuel Cerrejón González | IP: ${IP} ${TEMPC}"
 # Borramos el fichero anterior cuando salgamos
 
 trap "rm $INPUT; exit" SIGHUP SIGINT SIGTERM
@@ -28,8 +30,9 @@ RandomNum(){
 
 GPIO_RADIO(){
     sudo $HOME/pifm $HOME/halt.wav 95 &
+    dialog --infobox "Emitiendo por FM 95.0" 3 23; sleep 9
     dialog --infobox "Estás escuchando..." 3 23; sleep 9
-    dialog --infobox "Halt and Catch Fire" 3 23; sleep 21
+    dialog --infobox "Halt and Catch Fire" 3 23; sleep 22
 }
 
 RPLAY(){
@@ -41,13 +44,14 @@ RPLAY(){
 
     response=$?
     case $response in
-       0) clear ; sudo update-rc.d -f rplay enable ; sudo /etc/init.d/rplay start ; read -p "Activado. Pulse una tecla para continuar...";;
+       0) clear ; sudo update-rc.d -f rplay enable ; sudo /etc/init.d/rplay start ; read -p "Activado. Pulse una tecla para continuar..." ; sudo /etc/init.d/rplay stop ; sudo update-rc.d -f rplay disable;;
        1) clear ; sudo /etc/init.d/rplay stop ; sudo update-rc.d -f rplay disable; read -p "Desactivado. Pulse una tecla para continuar...";;
        255) echo "[ESC] key pressed.";;
     esac
 }
 
 OWNCLOUD(){
+    sudo sed -i "s/    0 => '192.168.1.157',/    0 => '$IP',/g" /var/www/owncloud/config/config.php
     dialog  --title     "[ ownCloud ]" \
         --backtitle "${BTITLE}" \
         --yes-label "Encender" \
@@ -56,7 +60,7 @@ OWNCLOUD(){
 
     response=$?
     case $response in
-       0) clear ; sudo update-rc.d -f nginx enable ; sudo /etc/init.d/nginx start ; read -p "Activado. Pulse una tecla para continuar...";;
+       0) clear ; sudo update-rc.d -f nginx enable ; sudo /etc/init.d/nginx start ; read -p "Activado. Pulse una tecla para continuar..." ; sudo /etc/init.d/nginx stop ; sudo update-rc.d -f nginx disable;;
        1) clear ; sudo /etc/init.d/nginx stop ; sudo update-rc.d -f nginx disable; read -p "Desactivado. Pulse una tecla para continuar...";;
        255) echo "[ESC] key pressed.";;
     esac
@@ -71,14 +75,36 @@ CAMERA(){
 
     response=$?
     case $response in
-       0) clear ; sudo update-rc.d -f nginx enable ; sudo /etc/init.d/nginx start ; read -p "Activado. Pulse una tecla para continuar...";;
-       1) clear ; sudo /etc/init.d/nginx stop ; sudo update-rc.d -f nginx disable; read -p "Desactivado. Pulse una tecla para continuar...";;
+       0) clear ; sudo update-rc.d -f apache2 enable ; sudo /etc/init.d/apache2 start ; read -p "Activado. Pulse una tecla para continuar..." ; sudo /etc/init.d/apache2 stop ; sudo update-rc.d -f apache2 disable;;
+       1) clear ; sudo /etc/init.d/apache2 stop ; sudo update-rc.d -f apache2 disable; read -p "Desactivado. Pulse una tecla para continuar...";;
        255) echo "[ESC] key pressed.";;
     esac
 }
 
 EMULATORS(){
-    echo "lo q sea"
+    cd $HOME/games
+    cd usp*
+    ./unreal_speccy_portable ninjajar.tap 
+    cd .. && cd pisnes
+    ./snes9x smb.smc
+    cd .. && cd mame*
+    ./mame
+    cd .. && cd psx
+    pcsx
+    clear
+    echo -e "También disponible emuladores para:\n\n· Apple II\n· Commodore 64\n· MSX\n· MS-DOS\n· Game Boy (Color, Advance)\n· Megadrive\n· Neo Geo\n...\n\n"
+    read -p "Pulse una tecla para continuar..."
+}
+
+XBMC(){
+    sudo reboot
+}
+
+QUAKE3(){
+    clear
+    echo "Iniciando Quake 3..."
+    cd /home/pi/sc/quake3/build/release-linux-arm/
+    ./ioquake3.arm
 }
 
 # Main menu
@@ -87,12 +113,15 @@ while true
 do
     dialog --clear --backtitle "${BTITLE}" \
     --title "[ ¿Para qué quiero yo una Raspberry PI? ]" --menu "" 13 70 13 \
-    Desktop "Escritorio ligero LXDE" \
+    Desktop "Servidor gráfico LXDE" \
     RPlay "AirPlay mirroring" \
     GPIO "General Purpose Input Output" \
+    Aceleradora "Veamos como rinde Broadcom..." \
     ownCloud "Tu propio espacio en la nube" \
-    Camara "* Prueba de cámara para videovigilancia" \
-    Emuladores "* Emula casi a la perfección cualquier sistema retro" \
+    Camara "Prueba de cámara para videovigilancia" \
+    Emuladores "Emula casi a la perfección cualquier sistema retro" \
+    XBMC "El Media Center más pequeño del mundo" \
+    PiKISS "Automatizar la configuración de tu Raspberry Pi" \
     Sorteo "Sorteo Kit Raspberry Pi @raspipc" \
     Exit "Salir a la Shell" 2>"${INPUT}"
 
@@ -102,10 +131,12 @@ do
         Desktop) startx;;
         RPlay) RPLAY;;
         GPIO) GPIO_RADIO;;
+        Aceleradora) QUAKE3;;
         ownCloud) OWNCLOUD;;
         Camara) CAMERA;;
         Emuladores) EMULATORS;;
-        Sorteo) RandomNum; echo -e "\nVisita misapuntesde.com :)"; break;;
+        PiKISS) $HOME/sc/PiKISS/piKiss.sh -nu;;
+        Sorteo) fbi /slides/raspipc.png ; RandomNum ; echo -e "\nVisita misapuntesde.com :)"; break;;
         Exit) echo "Visita misapuntesde.com :)"; break;;
     esac
 
